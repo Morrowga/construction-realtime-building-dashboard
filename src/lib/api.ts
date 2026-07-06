@@ -254,9 +254,14 @@ export async function rollbackReport(id: string, reason: string): Promise<Rollba
 }
 
 // ============================ Model files =============================
-export async function uploadModel(projectId: string, file: File): Promise<ModelFile> {
+export type ModelFileType = 'skeleton' | 'envelope' | 'interior'
+
+export async function uploadModel(
+  projectId: string, file: File, fileType: ModelFileType = 'skeleton',
+): Promise<ModelFile> {
   const form = new FormData()
   form.append('file', file)
+  form.append('file_type', fileType)
   const { data } = await api.post<ModelFile>(
     `${V1}/projects/${projectId}/model/upload`, form,
     { headers: { 'Content-Type': 'multipart/form-data' } },

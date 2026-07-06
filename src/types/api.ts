@@ -222,6 +222,10 @@ export interface ModelFile {
   original_s3_key?: string | null
   gltf_s3_key: string | null
   gltf_url: string | null
+  envelope_s3_key?: string | null
+  envelope_url?: string | null
+  interior_s3_key?: string | null
+  interior_url?: string | null
   zone_map: Record<string, string> | null
 }
 
