@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useAuthStore } from '@/store/authStore'
 import { getAccessToken } from '@/lib/auth'
+import { API_BASE } from '@/lib/api'
 
 /**
  * Embeds the 3D viewer via Next.js rewrite proxy (/viewer → backend /viewer).
@@ -53,6 +54,7 @@ export function ViewerEmbed({ projectId }: { projectId: string }) {
     new URLSearchParams({
       token,
       pid: projectId,
+      base: API_BASE,
       skel: `projects/${projectId}/model/original.glb`,
       env: `projects/${projectId}/model/envelope.glb`,
       int: `projects/${projectId}/model/interior.glb`,
