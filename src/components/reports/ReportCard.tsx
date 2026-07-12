@@ -138,6 +138,20 @@ export function ReportCard({
           <p className="text-xs text-text-muted">担当者メモ: {report.note}</p>
         )}
 
+        {/* approver name + date — previously not shown anywhere at all,
+            only a raw manager_id existed on the data with no UI for it */}
+        {report.approval && !report.approval.is_rolled_back && (
+          <p className="text-xs text-text-muted">
+            {report.approval.action === 'approved' ? '承認者' : '却下者'}:{' '}
+            <span className="font-medium text-text-primary">
+              {report.approval.manager_name ?? '不明'}
+            </span>
+            {report.approval.approved_at && (
+              <span className="ml-1">（{formatDateTime(report.approval.approved_at)}）</span>
+            )}
+          </p>
+        )}
+
         {/* rolled-back approvals shown struck through */}
         {report.approval?.is_rolled_back && (
           <p className="text-xs text-muted line-through">

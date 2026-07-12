@@ -1,13 +1,14 @@
 // src/components/projects/ProjectForm.tsx
 'use client'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { Loader2 } from 'lucide-react'
-import { createProject } from '@/lib/api'
+import { Loader2, ImagePlus, X } from 'lucide-react'
+import { createProject, uploadProjectImage } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -35,8 +36,40 @@ export function ProjectForm() {
     defaultValues: { report_format: 'standard', geo_lat: 35.6812, geo_lng: 139.7671 },
   })
 
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+
+  const handleImagePick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImageFile(file)
+    setImagePreview(URL.createObjectURL(file))
+  }
+
+  const clearImage = () => {
+    setImageFile(null)
+    if (imagePreview) URL.revokeObjectURL(imagePreview)
+    setImagePreview(null)
+  }
+
   const mutation = useMutation({
-    mutationFn: (values: ProjectValues) => createProject(values),
+    mutationFn: async (values: ProjectValues) => {
+      // Two-step by necessity: the image upload endpoint is
+      // POST /projects/{project_id}/image, and project_id only exists
+      // after creation. Image upload failing here is treated as
+      // non-fatal — the project itself already exists at that point,
+      // so we still navigate through rather than leaving the user
+      // stuck on a form for a problem with just the image.
+      const project = await createProject(values)
+      if (imageFile) {
+        try {
+          await uploadProjectImage(project.id, imageFile)
+        } catch {
+          toast.error('プロジェクトは作成されましたが、画像のアップロードに失敗しました')
+        }
+      }
+      return project
+    },
     onSuccess: (project) => {
       queryClient.invalidateQueries({ queryKey: ['projects'] })
       toast.success('プロジェクトを作成しました')
@@ -47,6 +80,29 @@ export function ProjectForm() {
 
   return (
     <form onSubmit={handleSubmit((v) => mutation.mutate(v))} className="max-w-lg space-y-4" noValidate>
+      <div className="space-y-1.5">
+        <Label>プロジェクト画像（任意）</Label>
+        {imagePreview ? (
+          <div className="relative h-40 w-full overflow-hidden rounded-md border border-border">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={imagePreview} alt="preview" className="h-full w-full object-cover" />
+            <button
+              type="button"
+              onClick={clearImage}
+              className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white hover:bg-black/90"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        ) : (
+          <label className="flex h-40 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-md border border-dashed border-border text-text-muted hover:border-accent/60 hover:text-accent">
+            <ImagePlus className="h-6 w-6" />
+            <span className="text-xs">クリックして画像を選択</span>
+            <input type="file" accept="image/jpeg,image/png" className="hidden" onChange={handleImagePick} />
+          </label>
+        )}
+      </div>
+
       <div className="space-y-1.5">
         <Label htmlFor="name">プロジェクト名</Label>
         <Input id="name" placeholder="〇〇マンション新築工事" {...register('name')} />
@@ -95,7 +151,11 @@ export function ProjectForm() {
         </div>
       </div>
 
-      <Button type="submit" disabled={mutation.isPending}>
+      <Button
+        type="submit"
+        className="bg-gradient-to-r from-accent to-black hover:opacity-90 transition-opacity"
+        disabled={mutation.isPending}
+      >
         {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
         プロジェクトを作成
       </Button>

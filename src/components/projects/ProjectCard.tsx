@@ -1,9 +1,9 @@
 // src/components/projects/ProjectCard.tsx
 'use client'
 import Link from 'next/link'
-import { MapPin, Layers } from 'lucide-react'
+import { MapPin, Layers, Building2 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
-import { getFloors, getProjectProgress } from '@/lib/api'
+import { getFloors, getProjectProgress, resolveProjectImageUrl } from '@/lib/api'
 import { formatDate } from '@/lib/utils'
 import type { Project } from '@/types/api'
 import { Card, CardContent } from '@/components/ui/card'
@@ -30,10 +30,21 @@ export function ProjectCard({ project }: { project: Project }) {
 
   const pct = progressQuery.data?.overall_pct ?? project.overall_pct ?? 0
   const status = STATUS_LABELS[project.status] ?? { label: project.status, variant: 'muted' as const }
+  const imageUrl = resolveProjectImageUrl(project)
 
   return (
     <Link href={`/dashboard/projects/${project.id}`}>
-      <Card className="h-full transition-colors hover:border-accent/60">
+      <Card className="h-full overflow-hidden transition-colors hover:border-accent/60">
+        <div className="relative h-32 w-full bg-surface">
+          {imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={imageUrl} alt={project.name} className="h-full w-full object-cover" />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-accent/10 to-black/30">
+              <Building2 className="h-8 w-8 text-text-muted" />
+            </div>
+          )}
+        </div>
         <CardContent className="flex items-center gap-4 p-5">
           <ProgressRing pct={pct} size={76} strokeWidth={7} />
           <div className="min-w-0 flex-1">

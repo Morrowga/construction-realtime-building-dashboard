@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { ArrowDown, ArrowUp, Loader2, Trash2, Wand2 } from 'lucide-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { assignTask, getFloors, getTaskTemplates, getZones } from '@/lib/api'
+import { assignTask, deleteZoneTask, getFloors, getTaskTemplates, getZones } from '@/lib/api'
 import { categoryHex, CATEGORY_LABELS, ZONE_TASK_SEQUENCES } from '@/lib/utils'
 import type { TaskTemplate } from '@/types/api'
 import { Button } from '@/components/ui/button'
@@ -22,6 +22,11 @@ interface PendingTask {
  * Right-hand panel of the 工程管理 screen: pick a zone, queue templates in
  * layer order (reorder with ↑/↓), optionally load a suggested sequence,
  * then assign everything with `layer_order` included on each call.
+ *
+ * Also shows the zone's ALREADY-ASSIGNED tasks (from live progress data)
+ * with a real delete action — previously the only Trash2 button in this
+ * component removed items from the local pending queue before submission,
+ * there was no way to remove a task that had already been saved.
  */
 export function ZoneTaskAssign({
   projectId, pendingTemplate, onConsumeTemplate,
@@ -54,14 +59,19 @@ export function ZoneTaskAssign({
     queryFn: () => getTaskTemplates(),
   })
 
-  const existingCount = useMemo(() => {
-    if (!zoneId || !progress) return 0
+  // Already-assigned tasks for the selected zone, sorted by layer_order —
+  // sourced from live progress data (same store the 3D viewer/dashboard
+  // reads), so this always reflects real saved state, not local queue state.
+  const existingTasks = useMemo(() => {
+    if (!zoneId || !progress) return []
     for (const floor of progress.floors) {
       const zone = floor.zones.find((z) => z.zone_id === zoneId)
-      if (zone) return zone.tasks.length
+      if (zone) return [...zone.tasks].sort((a, b) => (a.layer_order ?? 0) - (b.layer_order ?? 0))
     }
-    return 0
+    return []
   }, [zoneId, progress])
+
+  const existingCount = existingTasks.length
 
   // A template clicked in the library gets appended to the queue.
   useEffect(() => {
@@ -133,6 +143,21 @@ export function ZoneTaskAssign({
     onError: () => toast.error('タスクの割り当てに失敗しました'),
   })
 
+  const deleteMutation = useMutation({
+    mutationFn: (zoneTaskId: string) => deleteZoneTask(zoneId!, zoneTaskId),
+    onSuccess: () => {
+      toast.success('工程を削除しました')
+      queryClient.invalidateQueries({ queryKey: ['projects', projectId, 'progress'] })
+      queryClient.invalidateQueries({ queryKey: ['zones'] })
+    },
+    onError: () => toast.error('削除に失敗しました。この工程にすでに報告が紐づいている可能性があります'),
+  })
+
+  const handleDeleteExisting = (zoneTaskId: string, taskName: string) => {
+    if (!window.confirm(`「${taskName}」を削除しますか？関連する報告・承認履歴もすべて削除されます。`)) return
+    deleteMutation.mutate(zoneTaskId)
+  }
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
@@ -153,6 +178,40 @@ export function ZoneTaskAssign({
           </SelectContent>
         </Select>
       </div>
+
+      {zoneId && existingTasks.length > 0 && (
+        <div className="space-y-1.5">
+          <p className="text-xs font-medium text-text-muted">割り当て済みの工程（{existingTasks.length}件）</p>
+          <ul className="space-y-1.5">
+            {existingTasks.map((task) => {
+              const isDeleting = deleteMutation.isPending && deleteMutation.variables === task.zone_task_id
+              const sigColor = task.colour_signal === 'green' ? '#2ea043'
+                : task.colour_signal === 'amber' ? '#d29922' : 'var(--grey)'
+              return (
+                <li
+                  key={task.zone_task_id}
+                  className="flex items-center gap-2 rounded-md border border-border bg-surface px-3 py-2 text-sm"
+                >
+                  <span className="w-6 text-right text-xs font-semibold tabular-nums text-text-muted">
+                    {task.layer_order}
+                  </span>
+                  <span className="h-2 w-2 rounded-full" style={{ backgroundColor: sigColor }} />
+                  <span className="flex-1 truncate">{task.task_name}</span>
+                  <span className="text-xs tabular-nums text-text-muted">{task.pct.toFixed(0)}%</span>
+                  <button
+                    onClick={() => handleDeleteExisting(task.zone_task_id, task.task_name ?? '')}
+                    disabled={isDeleting}
+                    className="text-text-muted hover:text-[#f85149] disabled:opacity-50"
+                    aria-label="削除"
+                  >
+                    {isDeleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+      )}
 
       <div className="flex items-center gap-2">
         <Wand2 className="h-4 w-4 text-text-muted" />

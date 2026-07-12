@@ -65,6 +65,7 @@ export interface Project {
   geo_radius_m?: number
   client_id?: string | null
   admin_id?: string | null
+  image_s3_key?: string | null
   created_at?: string
 }
 
@@ -167,6 +168,7 @@ export interface Approval {
   id: string
   report_id?: string
   manager_id?: string
+  manager_name?: string | null
   action: 'approved' | 'rejected'
   comment: string | null
   final_pct: number | null

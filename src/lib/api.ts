@@ -148,6 +148,10 @@ export async function updateProject(id: string, payload: Partial<Project>): Prom
   return data
 }
 
+export async function deleteProject(id: string): Promise<void> {
+  await api.delete(`${V1}/projects/${id}`)
+}
+
 export async function getProjectProgress(id: string): Promise<ProjectProgress> {
   const { data } = await api.get<ProjectProgress>(`${V1}/projects/${id}/progress`)
   return data
@@ -161,6 +165,24 @@ export async function getProjectMembers(id: string): Promise<ProjectMember[]> {
 export async function inviteMember(id: string, email: string, role: string): Promise<ProjectMember> {
   const { data } = await api.post<ProjectMember>(`${V1}/projects/${id}/members`, { email, role })
   return data
+}
+
+export async function uploadProjectImage(projectId: string, file: File): Promise<Project> {
+  const form = new FormData()
+  form.append('file', file)
+  const { data } = await api.post<Project>(
+    `${V1}/projects/${projectId}/image`, form,
+    { headers: { 'Content-Type': 'multipart/form-data' } },
+  )
+  return data
+}
+
+/** No image_url field exists at all by design — always reconstruct from the
+ *  key, same reasoning as resolveGltfUrl below (a stored absolute URL goes
+ *  stale the moment it's accessed from a different host). */
+export function resolveProjectImageUrl(project: Project | null | undefined): string | null {
+  if (!project?.image_s3_key) return null
+  return `${API_BASE}/files/${project.image_s3_key}`
 }
 
 // =============================== Floors ===============================
@@ -218,6 +240,10 @@ export async function assignTask(
 ): Promise<ZoneTask> {
   const { data } = await api.post<ZoneTask>(`${V1}/zones/${zoneId}/tasks`, payload)
   return data
+}
+
+export async function deleteZoneTask(zoneId: string, zoneTaskId: string): Promise<void> {
+  await api.delete(`${V1}/zones/${zoneId}/tasks/${zoneTaskId}`)
 }
 
 // ============================== Reports ===============================

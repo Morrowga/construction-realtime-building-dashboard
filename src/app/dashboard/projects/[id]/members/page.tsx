@@ -70,7 +70,7 @@ export default function MembersPage() {
               </SelectContent>
             </Select>
           </div>
-          <Button type="submit" size="sm" disabled={!email || invite.isPending}>
+          <Button type="submit" className="bg-gradient-to-r from-accent to-black " size="sm" disabled={!email || invite.isPending}>
             {invite.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
             招待
           </Button>

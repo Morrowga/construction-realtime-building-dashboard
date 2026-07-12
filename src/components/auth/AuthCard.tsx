@@ -53,7 +53,11 @@ function LoginFields() {
       {login.isError && (
         <p className="text-xs text-[#f85149]">メールアドレスまたはパスワードが正しくありません</p>
       )}
-      <Button type="submit" className="w-full" disabled={login.isPending}>
+      <Button
+        type="submit"
+        className="w-full bg-gradient-to-r from-accent to-black hover:opacity-90 transition-opacity"
+        disabled={login.isPending}
+      >
         {login.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
         ログイン
       </Button>
@@ -111,7 +115,11 @@ function RegisterFields() {
           作成に失敗しました。メールアドレスが既に使われていないか確認してください。
         </p>
       )}
-      <Button type="submit" className="w-full" disabled={registerOrganization.isPending}>
+      <Button
+        type="submit"
+        className="w-full bg-gradient-to-r from-accent to-black hover:opacity-90 transition-opacity"
+        disabled={registerOrganization.isPending}
+      >
         {registerOrganization.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
         アカウントを作成
       </Button>

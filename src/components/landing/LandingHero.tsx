@@ -3,12 +3,12 @@
 import Link from 'next/link'
 import { CinematicBackground } from '@/components/landing/CinematicBackground'
 
-export function LandingHero({ onContactClick }: { onContactClick: () => void }) {
+export function LandingHero() {
   return (
-    <section className="relative flex h-screen w-full items-center justify-center overflow-hidden bg-[#03151f]">
+    <section className="relative flex h-screen w-full flex-col justify-end overflow-hidden bg-[#03151f]">
       <CinematicBackground />
 
-      <div className="relative z-10 flex flex-col items-center gap-8 px-4 text-center">
+      <div className="relative z-10 flex flex-col items-center gap-8 px-4 pb-24 text-center">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
             建設進捗プラットフォーム
@@ -31,12 +31,6 @@ export function LandingHero({ onContactClick }: { onContactClick: () => void }) 
           >
             新規登録
           </Link>
-          <button
-            onClick={onContactClick}
-            className="rounded-md border border-white/30 bg-transparent px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-white/10"
-          >
-            お問い合わせ
-          </button>
         </div>
       </div>
 

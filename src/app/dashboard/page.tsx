@@ -20,7 +20,7 @@ export default function DashboardPage() {
         <h1 className="text-lg font-semibold">プロジェクト一覧</h1>
         {canCreate && (
           <Link href="/dashboard/projects/new">
-            <Button size="sm">
+            <Button size="sm" className="bg-gradient-to-r from-accent to-black">
               <Plus className="h-4 w-4" />
               新規プロジェクト
             </Button>

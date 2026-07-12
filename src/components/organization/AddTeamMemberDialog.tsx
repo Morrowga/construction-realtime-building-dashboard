@@ -54,7 +54,7 @@ export function AddTeamMemberDialog() {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button size="sm" className="gap-1.5">
+        <Button size="sm" className="gap-1.5 bg-gradient-to-r from-accent to-black ">
           <Plus className="h-4 w-4" />
           メンバーを追加
         </Button>
@@ -126,7 +126,7 @@ export function AddTeamMemberDialog() {
             )}
 
             <div className="flex justify-end gap-2 pt-2">
-              <Button type="submit" disabled={createMember.isPending}>
+              <Button type="submit" className="bg-gradient-to-r from-accent to-black " disabled={createMember.isPending}>
                 {createMember.isPending ? '送信中...' : '招待を送信'}
               </Button>
             </div>
