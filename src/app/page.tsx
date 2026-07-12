@@ -9,7 +9,7 @@ export default function LandingPage() {
 
   return (
     <main className="h-screen overflow-hidden">
-      <LandingHero onContactClick={() => setContactOpen(true)} />
+      <LandingHero />
       <ContactDialog open={contactOpen} onOpenChange={setContactOpen} />
     </main>
   )
