@@ -132,8 +132,8 @@ export function AuthCard({ initialMode = 'login' }: { initialMode?: Mode }) {
 
   return (
     <div
-      className="rounded-lg border border-white/15 bg-black/40 p-8 backdrop-blur-md transition-[width] duration-300"
-      style={{ width: mode === 'register' ? '460px' : '400px' }}
+      className="w-full rounded-lg border border-white/15 bg-black/40 p-6 backdrop-blur-md transition-[width] duration-300 sm:p-8"
+      style={{ width: mode === 'register' ? '400px' : '400px', maxWidth: '100%' }}
     >
       <div className="mb-6 flex flex-col items-center gap-2 text-center">
         <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-white/10">

@@ -10,7 +10,7 @@ function LoginPageContent() {
   const initialMode = params.get('mode') === 'register' ? 'register' : 'login'
 
   return (
-    <main className="relative flex h-screen w-full items-center justify-end overflow-hidden bg-[#03151f] px-6 sm:px-16">
+    <main className="relative flex h-screen w-full items-center justify-center overflow-hidden bg-[#03151f] px-6 sm:justify-end sm:px-16">
       <CinematicBackground />
       <div className="relative z-10">
         <AuthCard initialMode={initialMode} />

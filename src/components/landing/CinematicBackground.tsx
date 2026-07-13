@@ -23,14 +23,14 @@ export function CinematicBackground() {
         background: 'linear-gradient(180deg, #03151f 0%, #0e2f42 55%, #123b4d 100%)',
       }} />
 
-      <div className="absolute bottom-0 left-1/2 h-[92%] w-auto -translate-x-1/2">
+      <div className="absolute inset-x-0 bottom-8 flex justify-center sm:bottom-12">
         <Image
           src="/landing/building-progress.png"
           alt=""
           width={1024}
           height={1536}
           priority
-          className="h-full w-auto object-contain object-bottom"
+          className="h-auto w-[85%] max-w-[520px] object-contain sm:w-[60%]"
         />
       </div>
 
